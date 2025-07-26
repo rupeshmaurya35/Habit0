@@ -212,28 +212,36 @@ const App = () => {
                 />
               </div>
 
-              {/* Interval Input */}
+              {/* Interval Dropdown */}
               <div className="mb-6">
                 <label htmlFor="interval" className="block text-sm font-medium text-gray-700 mb-2">
                   Reminder Interval
                 </label>
                 <div className="relative">
-                  <input
+                  <select
                     id="interval"
-                    type="number"
-                    min="1"
-                    max="1440"
                     value={intervalMinutes}
-                    onChange={(e) => setIntervalMinutes(parseInt(e.target.value) || 1)}
-                    className="w-full px-4 py-3 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    onChange={(e) => setIntervalMinutes(parseInt(e.target.value))}
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 appearance-none cursor-pointer"
                     disabled={isActive}
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm font-medium">
-                    minutes
-                  </span>
+                  >
+                    {[...Array(30)].map((_, index) => {
+                      const minutes = index + 1;
+                      return (
+                        <option key={minutes} value={minutes} className="text-gray-900 bg-white">
+                          {minutes} minute{minutes > 1 ? 's' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                    </svg>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Minimum: 1 minute • Maximum: 1440 minutes (24 hours)
+                  Choose from 1 to 30 minutes
                 </p>
               </div>
 
