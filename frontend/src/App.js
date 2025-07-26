@@ -206,7 +206,7 @@ const App = () => {
                   value={reminderText}
                   onChange={(e) => setReminderText(e.target.value)}
                   placeholder="Enter your reminder message..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none bg-white text-gray-900 placeholder-gray-500"
                   rows="3"
                   disabled={isActive}
                 />
