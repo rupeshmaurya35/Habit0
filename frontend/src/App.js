@@ -32,13 +32,40 @@ const App = () => {
       deferredPrompt.current = e;
       // Show the install button
       setShowInstallPrompt(true);
+      console.log('Install prompt available');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
       setShowInstallPrompt(false);
+      console.log('App is already installed');
+    }
+
+    // Enhanced service worker registration with proper handling
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then((registration) => {
+          console.log('SW registered successfully:', registration);
+          
+          // Handle service worker updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('New service worker installed, refreshing...');
+                  window.location.reload();
+                }
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          console.log('SW registration failed:', error);
+        });
     }
 
     return () => {
