@@ -143,7 +143,7 @@ const App = () => {
     // Set up recurring notifications
     intervalRef.current = setInterval(() => {
       showNotification();
-    }, intervalMinutes * 60 * 1000);
+    }, getIntervalMs());
   };
 
   // Stop reminders
