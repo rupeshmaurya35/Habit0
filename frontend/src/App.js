@@ -8,8 +8,10 @@ const App = () => {
   const [isActive, setIsActive] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState("default");
   const [nextReminderTime, setNextReminderTime] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
+  const deferredPrompt = useRef(null);
 
   // Calculate interval in milliseconds
   const getIntervalMs = () => {
@@ -21,7 +23,51 @@ const App = () => {
     if ("Notification" in window) {
       setNotificationPermission(Notification.permission);
     }
+
+    // Handle PWA install prompt
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Save the event so it can be triggered later
+      deferredPrompt.current = e;
+      // Show the install button
+      setShowInstallPrompt(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Check if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallPrompt(false);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
+  // Handle PWA installation
+  const handleInstallClick = async () => {
+    if (!deferredPrompt.current) {
+      return;
+    }
+
+    // Show the install prompt
+    deferredPrompt.current.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.current.userChoice;
+
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+      setShowInstallPrompt(false);
+    } else {
+      console.log('User dismissed the install prompt');
+    }
+
+    // Clear the saved prompt since it can't be used again
+    deferredPrompt.current = null;
+  };
 
   // Request notification permission
   const requestNotificationPermission = async () => {
