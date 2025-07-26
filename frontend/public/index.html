@@ -30,19 +30,34 @@
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         
-        <!-- Service Worker Registration -->
+        <!-- Service Worker Registration with better handling -->
         <script>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                    navigator.serviceWorker.register('/sw.js')
+                    navigator.serviceWorker.register('/sw.js', { scope: '/' })
                         .then(function(registration) {
                             console.log('SW registered: ', registration);
+                            
+                            // Wait for service worker to be ready
+                            return navigator.serviceWorker.ready;
+                        })
+                        .then(function(registration) {
+                            console.log('SW ready: ', registration);
                         })
                         .catch(function(registrationError) {
                             console.log('SW registration failed: ', registrationError);
                         });
                 });
             }
+            
+            // Additional PWA installation hints for Android
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('beforeinstallprompt event fired');
+                // Don't immediately show the prompt
+                e.preventDefault();
+                // Store the event for later use
+                window.deferredPrompt = e;
+            });
         </script>
         
         <a
