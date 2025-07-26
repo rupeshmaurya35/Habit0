@@ -73,23 +73,33 @@ const App = () => {
     };
   }, []);
 
-  // Handle PWA installation with better Android support
+  // Enhanced PWA installation with better Android support
   const handleInstallClick = async () => {
     if (!deferredPrompt.current) {
       // For Android Chrome, provide manual installation instructions
       const isAndroid = /Android/i.test(navigator.userAgent);
       const isChrome = /Chrome/i.test(navigator.userAgent);
+      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
       
       if (isAndroid && isChrome) {
         alert(
           "To install this app:\n\n" +
           "1. Tap the three dots (⋮) in Chrome\n" +
           "2. Select 'Add to Home screen'\n" +
-          "3. Tap 'Add' when prompted\n\n" +
+          "3. Choose 'Install' (not just 'Add')\n" +
+          "4. Tap 'Install' when prompted\n\n" +
           "The app will then appear in your app drawer like other apps!"
         );
+      } else if (isSafari) {
+        alert(
+          "To install this app on Safari:\n\n" +
+          "1. Tap the Share button (📤)\n" +
+          "2. Select 'Add to Home Screen'\n" +
+          "3. Tap 'Add' when prompted\n\n" +
+          "The app will appear on your home screen!"
+        );
       } else {
-        alert("This app can be installed on supported browsers. Try using Chrome on Android.");
+        alert("This app can be installed on supported browsers. Try using Chrome on Android or Safari on iOS.");
       }
       return;
     }
@@ -114,13 +124,27 @@ const App = () => {
       console.error('Error during installation:', error);
       
       // Fallback for manual installation
-      alert(
-        "To install this app manually:\n\n" +
-        "1. Open Chrome menu (three dots)\n" +
-        "2. Select 'Add to Home screen'\n" +
-        "3. Tap 'Add' when prompted\n\n" +
-        "The app will appear in your app drawer!"
-      );
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent);
+      
+      if (isAndroid && isChrome) {
+        alert(
+          "To install this app manually:\n\n" +
+          "1. Open Chrome menu (three dots)\n" +
+          "2. Select 'Add to Home screen'\n" +
+          "3. Choose 'Install' (not just 'Add')\n" +
+          "4. Tap 'Install' when prompted\n\n" +
+          "The app will appear in your app drawer!"
+        );
+      } else {
+        alert(
+          "To install this app manually:\n\n" +
+          "1. Open browser menu\n" +
+          "2. Select 'Add to Home screen' or 'Install'\n" +
+          "3. Tap 'Install' when prompted\n\n" +
+          "The app will appear on your device!"
+        );
+      }
     }
   };
 
