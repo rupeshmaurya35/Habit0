@@ -119,8 +119,9 @@ const App = () => {
       return;
     }
 
-    if (intervalMinutes < 1) {
-      alert("Please enter a valid interval (minimum 1 minute)!");
+    if (intervalValue < 1) {
+      const unit = intervalUnit === "seconds" ? "second" : "minute";
+      alert(`Please enter a valid interval (minimum 1 ${unit})!`);
       return;
     }
 
