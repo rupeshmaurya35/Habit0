@@ -29,26 +29,61 @@ const App = () => {
 
   // Show notification with auto-dismiss
   const showNotification = () => {
-    if ("Notification" in window && Notification.permission === "granted") {
-      const notification = new Notification("Reminder", {
+    try {
+      if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        return;
+      }
+
+      if (Notification.permission !== "granted") {
+        console.log("Notification permission not granted");
+        return;
+      }
+
+      // Create notification with better mobile compatibility
+      const notificationOptions = {
         body: reminderText,
-        icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiM0Rjc2RkYiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Im0yMiAxMyAtMyAzIDMgMy0zIDMiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9IkE0IDQgMCAwIDEgMTYgMTZIMTJ2LTRIMSA0IDQgMCAwIDEgMTIgMTJWOGgweiIvPgo8cGF0aCBkPSJNMTIgOGg0djRoMHoiLz4KPC9zdmc+Cjwvc3ZnPgo=",
-        badge: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiM0Rjc2RkYiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Im0yMiAxMyAtMyAzIDMgMy0zIDMiLz4KPC9zdmc+Cjwvc3ZnPgo=",
+        icon: "/favicon.ico",
+        badge: "/favicon.ico",
         tag: "reminder-notification",
         requireInteraction: false,
-        silent: false
-      });
+        silent: false,
+        timestamp: Date.now()
+      };
+
+      const notification = new Notification("Reminder", notificationOptions);
 
       // Auto-dismiss after 10 seconds
       setTimeout(() => {
-        notification.close();
+        try {
+          notification.close();
+        } catch (e) {
+          console.log("Error closing notification:", e);
+        }
       }, 10000);
 
       // Handle notification click
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
+      notification.onclick = function(event) {
+        try {
+          event.preventDefault();
+          window.focus();
+          this.close();
+        } catch (e) {
+          console.log("Error handling notification click:", e);
+        }
       };
+
+      // Handle notification error
+      notification.onerror = function(event) {
+        console.log("Notification error:", event);
+      };
+
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      // Fallback: show alert on mobile if notifications fail
+      if (confirm("Reminder: " + reminderText + "\n\nClick OK to acknowledge.")) {
+        // User acknowledged
+      }
     }
   };
 
