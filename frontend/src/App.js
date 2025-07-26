@@ -3,12 +3,18 @@ import "./App.css";
 
 const App = () => {
   const [reminderText, setReminderText] = useState("Time to take a break!");
-  const [intervalMinutes, setIntervalMinutes] = useState(5);
+  const [intervalValue, setIntervalValue] = useState(5);
+  const [intervalUnit, setIntervalUnit] = useState("minutes"); // "seconds" or "minutes"
   const [isActive, setIsActive] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState("default");
   const [nextReminderTime, setNextReminderTime] = useState(null);
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
+
+  // Calculate interval in milliseconds
+  const getIntervalMs = () => {
+    return intervalUnit === "seconds" ? intervalValue * 1000 : intervalValue * 60 * 1000;
+  };
 
   // Check notification permission on component mount
   useEffect(() => {
