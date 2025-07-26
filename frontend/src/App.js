@@ -79,7 +79,7 @@ const App = () => {
     return false;
   };
 
-  // Show notification with auto-dismiss
+  // Show notification with auto-dismiss (via Service Worker for system notifications)
   const showNotification = () => {
     try {
       if (!("Notification" in window)) {
@@ -92,43 +92,49 @@ const App = () => {
         return;
       }
 
-      // Create notification with better mobile compatibility
-      const notificationOptions = {
-        body: reminderText,
-        icon: "/favicon.ico",
-        badge: "/favicon.ico",
-        tag: "reminder-notification",
-        requireInteraction: false,
-        silent: false,
-        timestamp: Date.now()
-      };
+      // Use service worker for system notifications (appears in notification bar)
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // Send message to service worker to show system notification
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SHOW_NOTIFICATION',
+          title: 'Smart Reminder',
+          body: reminderText,
+          tag: 'reminder-' + Date.now()
+        });
+        console.log('System notification requested via service worker');
+      } else {
+        // Fallback to web notification if service worker not available
+        console.log('Service worker not available, using fallback notification');
+        const notification = new Notification("Smart Reminder", {
+          body: reminderText,
+          icon: "/icon-192x192.png",
+          badge: "/icon-192x192.png",
+          tag: "reminder-notification",
+          requireInteraction: false,
+          silent: false,
+          timestamp: Date.now()
+        });
 
-      const notification = new Notification("Reminder", notificationOptions);
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+          try {
+            notification.close();
+          } catch (e) {
+            console.log("Error closing notification:", e);
+          }
+        }, 10000);
 
-      // Auto-dismiss after 10 seconds
-      setTimeout(() => {
-        try {
-          notification.close();
-        } catch (e) {
-          console.log("Error closing notification:", e);
-        }
-      }, 10000);
-
-      // Handle notification click
-      notification.onclick = function(event) {
-        try {
-          event.preventDefault();
-          window.focus();
-          this.close();
-        } catch (e) {
-          console.log("Error handling notification click:", e);
-        }
-      };
-
-      // Handle notification error
-      notification.onerror = function(event) {
-        console.log("Notification error:", event);
-      };
+        // Handle notification click
+        notification.onclick = function(event) {
+          try {
+            event.preventDefault();
+            window.focus();
+            this.close();
+          } catch (e) {
+            console.log("Error handling notification click:", e);
+          }
+        };
+      }
 
     } catch (error) {
       console.error("Error creating notification:", error);
