@@ -96,7 +96,7 @@ const App = () => {
   // Calculate next reminder time
   const calculateNextReminderTime = () => {
     const now = new Date();
-    const next = new Date(now.getTime() + intervalMinutes * 60 * 1000);
+    const next = new Date(now.getTime() + getIntervalMs());
     return next;
   };
 
@@ -110,7 +110,7 @@ const App = () => {
     } else {
       setNextReminderTime(null);
     }
-  }, [isActive, intervalMinutes]);
+  }, [isActive, intervalValue, intervalUnit]);
 
   // Start reminders
   const startReminders = async () => {
