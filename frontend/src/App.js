@@ -262,15 +262,21 @@ const App = () => {
                 <div className="relative">
                   <select
                     id="interval"
-                    value={intervalMinutes}
-                    onChange={(e) => setIntervalMinutes(parseInt(e.target.value))}
+                    value={`${intervalValue}-${intervalUnit}`}
+                    onChange={(e) => {
+                      const [value, unit] = e.target.value.split('-');
+                      setIntervalValue(parseInt(value));
+                      setIntervalUnit(unit);
+                    }}
                     className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 appearance-none cursor-pointer"
                     disabled={isActive}
                   >
+                    <option value="20-seconds" className="text-gray-900 bg-white">20 seconds</option>
+                    <option value="30-seconds" className="text-gray-900 bg-white">30 seconds</option>
                     {[...Array(30)].map((_, index) => {
                       const minutes = index + 1;
                       return (
-                        <option key={minutes} value={minutes} className="text-gray-900 bg-white">
+                        <option key={`${minutes}-minutes`} value={`${minutes}-minutes`} className="text-gray-900 bg-white">
                           {minutes} minute{minutes > 1 ? 's' : ''}
                         </option>
                       );
@@ -283,7 +289,7 @@ const App = () => {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Choose from 1 to 30 minutes
+                  Choose from 20 seconds to 30 minutes
                 </p>
               </div>
 
