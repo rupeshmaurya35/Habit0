@@ -73,27 +73,55 @@ const App = () => {
     };
   }, []);
 
-  // Handle PWA installation
+  // Handle PWA installation with better Android support
   const handleInstallClick = async () => {
     if (!deferredPrompt.current) {
+      // For Android Chrome, provide manual installation instructions
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent);
+      
+      if (isAndroid && isChrome) {
+        alert(
+          "To install this app:\n\n" +
+          "1. Tap the three dots (⋮) in Chrome\n" +
+          "2. Select 'Add to Home screen'\n" +
+          "3. Tap 'Add' when prompted\n\n" +
+          "The app will then appear in your app drawer like other apps!"
+        );
+      } else {
+        alert("This app can be installed on supported browsers. Try using Chrome on Android.");
+      }
       return;
     }
 
-    // Show the install prompt
-    deferredPrompt.current.prompt();
+    try {
+      // Show the install prompt
+      deferredPrompt.current.prompt();
 
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.current.userChoice;
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.current.userChoice;
 
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-      setShowInstallPrompt(false);
-    } else {
-      console.log('User dismissed the install prompt');
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        setShowInstallPrompt(false);
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+
+      // Clear the saved prompt since it can't be used again
+      deferredPrompt.current = null;
+    } catch (error) {
+      console.error('Error during installation:', error);
+      
+      // Fallback for manual installation
+      alert(
+        "To install this app manually:\n\n" +
+        "1. Open Chrome menu (three dots)\n" +
+        "2. Select 'Add to Home screen'\n" +
+        "3. Tap 'Add' when prompted\n\n" +
+        "The app will appear in your app drawer!"
+      );
     }
-
-    // Clear the saved prompt since it can't be used again
-    deferredPrompt.current = null;
   };
 
   // Request notification permission
