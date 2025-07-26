@@ -1,13 +1,15 @@
-/* Service Worker for Smart Reminders PWA - System Notifications */
+/* Enhanced Service Worker for Smart Reminders PWA - System Notifications & Install Support */
 
-const CACHE_NAME = 'smart-reminders-v2';
+const CACHE_NAME = 'smart-reminders-v3';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/manifest.json',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/apple-touch-icon.png',
+  '/favicon.ico'
 ];
 
 // Install service worker
@@ -46,16 +48,41 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Enhanced fetch event with network-first strategy for better PWA experience
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  
+  // Skip non-GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+  
+  // Skip chrome-extension and other non-http requests
+  if (!request.url.startsWith('http')) {
+    return;
+  }
+  
   event.respondWith(
-    caches.match(event.request)
+    fetch(request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
+        // Check if we received a valid response
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
-        return fetch(event.request);
+        
+        // Clone the response for caching
+        const responseToCache = response.clone();
+        
+        caches.open(CACHE_NAME)
+          .then((cache) => {
+            cache.put(request, responseToCache);
+          });
+        
+        return response;
+      })
+      .catch(() => {
+        // If network fails, try cache
+        return caches.match(request);
       })
   );
 });
@@ -105,6 +132,11 @@ self.addEventListener('message', (event) => {
       console.error('Error showing notification:', error);
     });
   }
+  
+  // Handle PWA install event
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Handle notification click
@@ -139,4 +171,43 @@ self.addEventListener('notificationclick', (event) => {
 // Handle notification close
 self.addEventListener('notificationclose', (event) => {
   console.log('Notification closed:', event.notification);
+});
+
+// Handle PWA install event
+self.addEventListener('appinstalled', (event) => {
+  console.log('PWA was installed successfully!');
+});
+
+// Background sync for offline reminders (if supported)
+self.addEventListener('sync', (event) => {
+  console.log('Background sync event:', event.tag);
+  if (event.tag === 'reminder-sync') {
+    event.waitUntil(
+      // Handle background sync for reminders
+      Promise.resolve()
+    );
+  }
+});
+
+// Handle push notifications (for future enhancement)
+self.addEventListener('push', (event) => {
+  if (event.data) {
+    const data = event.data.json();
+    console.log('Push notification received:', data);
+    
+    const options = {
+      body: data.body || 'Smart Reminder',
+      icon: '/icon-192x192.png',
+      badge: '/icon-192x192.png',
+      tag: 'push-reminder',
+      requireInteraction: false,
+      data: {
+        url: self.location.origin
+      }
+    };
+    
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'Smart Reminders', options)
+    );
+  }
 });
